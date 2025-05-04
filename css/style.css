@@ -98,6 +98,14 @@ p.lead {
 	font-weight: 600;
 }
 
+.accordion-panel p {
+	text-align: left;
+}
+
+.accordion-panel p.text-center {
+	text-align: center;
+}
+
 .highlight-light {
 	background-color: rgba(255,255,255,.5);
 	padding: 20px;
