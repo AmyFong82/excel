@@ -1,12 +1,10 @@
 <?php
 use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 
 //Load Composer's autoloader (created by composer, not included with PHPMailer)
-require 'vendor/autoload.php';
-require 'vendor/phpmailer/phpmailer/src/Exception.php';
-require 'vendor/phpmailer/phpmailer/src/PHPMailer.php';
-require 'vendor/phpmailer/phpmailer/src/SMTP.php';
+require '../vendor/autoload.php';
 
 // Enable error reporting for debugging
 ini_set('display_errors', 1);
@@ -17,7 +15,7 @@ error_reporting(E_ALL);
 $max_file_size = 5 * 1024 * 1024; // 5MB
 $allowed_types = ['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png', 'gif'];
 
-  $email = new PHPMailer(true);
+  $mail = new PHPMailer(true);
 
   try {
       // Server settings
@@ -28,14 +26,19 @@ $allowed_types = ['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png', 'gif'];
       $mail->Password   = '0d993e7ba37ae2';
       $mail->Port       = 2525;
 
-      // Combine user's email with your domain
-      $mail->setFrom('contact@excelpssllc.com', 'Contact Form');
+      // Recipients
+      $mail->setFrom('contact-form@excelpssllc.com', 'Contact Form'); //This is just a madeup email account, does not exist.
       $mail->addAddress('miyukipg@hotmail.com');
       $mail->addReplyTo($_POST['email'], $_POST['name']); // For replies
 
       // Handle file attachment if uploaded
     if (isset($_FILES['attachment']) && $_FILES['attachment']['error'] == UPLOAD_ERR_OK) {
         $file = $_FILES['attachment'];
+
+        // Verify file was actually uploaded
+        if (!is_uploaded_file($_FILES['attachment']['tmp_name'])) {
+            throw new Exception('Possible file upload attack!');
+        }
         
         // Validate file size
         if ($file['size'] > $max_file_size) {
@@ -65,7 +68,9 @@ $allowed_types = ['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png', 'gif'];
         <p><strong>Name:</strong> {$_POST['name']}</p>
         <p><strong>Email:</strong> {$_POST['email']}</p>
         <p><strong>Message:</strong></p>
-        <p>{$_POST['message']}</p>";
+        <p>{$_POST['message']}</p>"
+         . (!empty($_FILES['attachment']['name']) ? 
+            "<p><strong>Attachment:</strong> {$_FILES['attachment']['name']}</p>" : '');
       
       $mail->send();
       echo 'Message has been sent';
